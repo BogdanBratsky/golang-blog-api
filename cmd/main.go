@@ -1,19 +1,28 @@
 package main
 
 import (
+	"golang-blog-api/api"
+	"golang-blog-api/config"
 	"golang-blog-api/db"
 	"log"
 	"net/http"
+
+	"github.com/spf13/viper"
 )
 
 func main() {
 	db.InitDB()
 	defer db.CloseDB()
 
-	if err := http.ListenAndServe(":3000", nil); err != nil {
+	router := api.Routes()
+
+	if err := config.InitConfig(); err != nil {
+		log.Println("Failed to read config.yaml: ", err)
+	}
+
+	if err := http.ListenAndServe(viper.GetString("port"), router); err != nil {
 		log.Println("Не удалось запустить сервер: ", err)
 		return
-	} else {
-		log.Println("Сервер запущен")
 	}
+	log.Println("Сервер запущен")
 }
